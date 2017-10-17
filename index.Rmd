@@ -1,0 +1,136 @@
+---
+title:
+author: "afilazzola"
+date: "Oct 2017"
+output:
+  html_document:
+    theme: yeti
+    toc: yes
+    toc_depth: 3
+    toc_float: yes
+  pdf_document:
+    toc: yes
+---
+
+## Introduction to R functions
+
+
+![](function.jpg)
+
+
+### Introduction
+
+One of the more powerful aspects of R relative to other statistical softwares such as SPSS is the ability to create functions. Functions are extremely powerful because they allow for the automation of repetitive tasks and reduce bloated code from the more traditional "copy-paste" format. This becomes extremely powerful when combined with the apply family or loops. However, that will be covered later and for now we will discuss what a loop is. 
+
+Why use functions?
+- save complicated operations or mathematical calculations 
+- reduce repetitive tasks
+- standardize formats (e.g. plots, maps, etc)
+- combine with apply family for automation of tasks
+
+### Function Syntax
+
+The format of function is fairly simple:
+
+`function.name <- function(arguments){`
+`arguments + operation`
+`}`
+
+Here arguments can be any lists of text or characters that will later be used within the formula. Within the function, the operate will have two general components. Firstly, the portion of the function that will remain unchanged each time it is used. The second are the arguments that will be changed each time. 
+
+Ex.1
+```{r}
+add.3 <- function(x){
+x+3
+}
+
+add.3(x=5)
+```
+
+
+For these functions there are two items that will remain unchanged. The first is the calculation. In the above example, the addition operation will not change and remains the same. These types of functions are useful when you have a particular index that you are trying to calculate, but the inputs will keep changing. 
+
+Ex.2
+
+Log response ratio is a calculation when comparing two groups based on a treatment vs control format. 
+
+```{r}
+LRR <- function(treatment,control){
+  log(treatment/control)
+}
+
+
+LRR(treatment=30, control=20)
+```
+
+Here we see that the log response ratio of our two individuals. Specifying the treatments is not entirely necessary. Depending on how you set up your arguments, R will assume your inputs will be in the order that they are presented. The function can also handle any type of data format such as number, vector, shapefile, dataframe, etc, just as long as what is specified within the function can handle it.
+
+Ex.3
+```{r}
+
+treat1 = c(30,40,50,35,45,55)
+control1= c(20,25,30,23,25,20)
+
+LRR(treat1, control1)
+```
+
+
+To drive home the point a bit more, you can even embed functions within functions. Something that actually becomes more useful that you may believe. 
+
+Ex.4 
+
+```{r}
+## Create function to calculate average
+average <- function(x){
+  sum(x)/length(x) 
+}
+
+## assign LRR to object
+experiment.results <- LRR(treat1, control1)
+
+## calculate the average of results from LRR
+average(experiment.results)
+```
+
+The second major component of a function that remains consistent between its usage are particular settings. This is especially true when you are trying to run some form of analyses that have specific assumptions, weightings, or syntax. 
+
+For example, imagining you would like to run a series of Generalized linear models with specific settings, such as poisson family. The function would look as such:
+
+```{r}
+
+glm.pois <- function(predictor,response){
+m1 <- glm(y~x, family=poisson) ## glm formula with poisson family
+anova(m1, test="Chisq") ## test for difference
+}
+
+y <- rpois(10,5) ## create random poisson distribution
+x <- rep(c("group1","group2"),5) ## create random grouping variable
+
+glm.pois(x,y)
+```
+
+### Functions for plots
+
+Creating plots in R is difficult. The aesthetic component is getting better and packages such as ggplot2 help format plots to be more appealing. However, defaults are not ideal and often not publication quality. It can be helpful to create a function that matches your ideal plot archetype and then edit the inputs only. 
+
+Lets use the cars dataset to conduct and plot a correlation
+
+```{r}
+cars
+```
+
+We can use default plot to see the output. On our first look we can see the output is less than ideal. To resolve this I will load an R script using the `source` function. This way I can pull all my prefered defaults.
+
+Ex.5
+```{r}
+
+plot(cars)
+
+plot.better <- function(x,y,...){
+  plot(x,y, pch=21, cex=2, cex.axis=1.3, cex.lab=1.5, bg="Grey70",...)
+}
+
+plot.better(cars[,"speed"],cars[,"dist"], xlab="speed", ylab="distance")
+```
+
+Here, I have added the `...` syntax. This allows for the specification of additional arugments that can be present within your function that you may wish to manipulate 
