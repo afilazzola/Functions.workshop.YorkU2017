@@ -20,13 +20,14 @@ output:
 
 ### Introduction
 
-One of the more powerful aspects of R relative to other statistical softwares such as SPSS is the ability to create functions. Functions are extremely powerful because they allow for the automation of repetitive tasks and reduce bloated code from the more traditional "copy-paste" format. This becomes extremely powerful when combined with the apply family or loops. However, that will be covered later and for now we will discuss what a loop is. 
+One of the more powerful aspects of R relative to other statistical softwares such as SPSS is the ability to create functions. [Functions](presentations/functionsintro.pdf) are extremely powerful because they allow for the automation of repetitive tasks and reduce bloated code from the more traditional "copy-paste" format. This becomes extremely powerful when combined with the apply family or loops. However, that will be covered later in this [presentation](presentations/ApplyingInR.pdf)
 
 Why use functions?
-- save complicated operations or mathematical calculations 
-- reduce repetitive tasks
-- standardize formats (e.g. plots, maps, etc)
-- combine with apply family for automation of tasks
+
+* save complicated operations or mathematical calculations
+* reduce repetitive tasks
+* standardize formats (e.g. plots, maps, etc)
+* combine with apply family for automation of tasks
 
 ### Function Syntax
 
@@ -133,4 +134,50 @@ plot.better <- function(x,y,...){
 plot.better(cars[,"speed"],cars[,"dist"], xlab="speed", ylab="distance")
 ```
 
-Here, I have added the `...` syntax. This allows for the specification of additional arugments that can be present within your function that you may wish to manipulate 
+Here, I have added the `...` syntax. This allows for the specification of additional arugments that can be present within your function that are likely to change each time you use the function. This is helpful because you can combine arguments that will remain static, arguments that will always change, and arguments that will change only some of the time. 
+
+
+### Functions for summaries
+
+The reason I find functions so helpful is that they can be embeded into other functions or automation tools in R. The apply family is a perfect example of this and what we will be covering shortly. However, I want to give a quick example using another method. The function `aggregate` in R is useful for acquiring summary statistics by a certain variable. The syntax is similar to a linear model and can be present as `response ~ predictor`. The third argument is the function you would like to apply to this. Typically, I use `mean` to get averages per treatment, but there are a whole host of other metrics that could be used as well. 
+
+Let us first start with a dataset with two drug treatments and a control on 60 individuals. 
+
+Ex.6
+```{r}
+response <- c(4.31068872,4.02239617,5.63827473,7.72906176,7.35096786,4.2539145,7.9450572,3.5814285,6.430872,4.64378698,3.55665898,4.99139648,4.036698,5.46499184,3.85910911,3.5291655,5.90729568,5.674248,7.23597678,4.39489848,7.63737,9.6482263,7.28738049,7.4192216,10.59532723,9.2013317,9.4829496,7.1599644,6.940219,7.30966038,7.10753942,9.28011484,8.97616,9.08440512,7.2778324,7.8634062,8.15142375,8.9925216,8.69784123,5.5644162,10.92730496,10.1363948,9.41244444,10.263204,11.38765203,13.2568931,14.4508848,7.5576591,8.530619,12.19368536,6.74443276,13.08433484,10.727451,13.27716208,9.49188068,9.8798724,10.98806094,9.79678656,10.81542819,7.57395576)
+
+treatment <- c(rep("control",20),rep("drugA",20),rep("drugB",20))
+
+data <- data.frame(treatment, response)
+data
+
+## calculate means for each treatment
+
+aggregate(response~treatment, data=data, FUN=mean)
+
+```
+
+Here we calculated the mean for each treatment by specifying which function will opperate on the treatment group. This does not be restricted to functions in R base.It could also be expanded to include items such as linear models, complex index calculations, or anything else that is applied at the group level. Let's try it with a user defined function
+
+
+```{r}
+
+## function for standard error
+se <- function(x) sqrt(var(x)/length(x))
+
+aggregate(response~treatment, data=data, FUN=se)
+
+## calculate confidence intervals
+
+conf95 <- function(x)   {(sqrt(var(x,na.rm=T)/length(na.omit(x))))*1.96}
+
+aggregate(response~treatment, data=data, FUN=conf95)
+
+```
+
+There are similar utilizations in `tidyverse` within `dplyr` such as:
+
+`data %>% group_by(site)  %>% summarize(temp.avg=mean(temperature),temp.se=conf95(temperature)`
+
+
